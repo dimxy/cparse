@@ -202,6 +202,13 @@ void rpnBuilder::handle_op(const std::string& op) {
 }
 
 void rpnBuilder::handle_token(TokenBase* token) {
+  // for vars, literals, function calls etc check the previous token should be an operator:
+  if (token->type != OP && token->type != UNARY && !lastTokenWasOp && !lastTokenWasUnary)  {
+    std::string name = (token->type & REF) ?
+        static_cast<const RefToken*>(token)->key.str() : ("\"" + packToken::str(token) + "\"");
+    throw std::domain_error(
+        "Expected operator before token " + name + "!");
+  }
   rpn.push(token);
   lastTokenWasOp = false;
   lastTokenWasUnary = false;
